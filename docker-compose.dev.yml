@@ -1,0 +1,17 @@
+version: "3.7"
+services:
+  db:
+    image: postgres:14
+    restart: always
+    volumes:
+      - ./data:/var/lib/postgresql/data/pgdata
+    env_file:
+      - /app/.env
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+
+  redis:
+    image: redis:7.0.6
+    restart: always
+    env_file:
+      - /app/.env
