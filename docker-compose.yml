@@ -1,4 +1,4 @@
-version: "3.7"
+version: '3.7'
 
 services:
   backend:
@@ -32,8 +32,7 @@ services:
       context: .
       dockerfile: rocketryscheduler.dockerfile
     volumes:
-      - ./tour-core:/tour-core
-      - ./media/report/:/tour-core/media/report/
+      - ./app:/app/
     restart: always
     depends_on:
       - backend

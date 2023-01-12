@@ -6,12 +6,14 @@ services:
     volumes:
       - ./data:/var/lib/postgresql/data/pgdata
     env_file:
-      - /app/.env
+      - .env
+    ports:
+      - 5433:5433
     environment:
       - PGDATA=/var/lib/postgresql/data/pgdata
 
   redis:
     image: redis:7.0.6
     restart: always
-    env_file:
-      - /app/.env
+    ports:
+      - 6378:6379
