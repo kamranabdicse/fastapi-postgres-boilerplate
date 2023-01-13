@@ -14,17 +14,22 @@ services:
     volumes:
       - ./app:/app/
 
+  queue:
+    image: rabbitmq
+
+
   celery-worker:
     image: celery-img
     restart: always
     depends_on:
       - backend
+      - queue
     env_file:
       - .env
     build:
       context: .
       dockerfile: celeryworker.dockerfile
-    command: celery -A celery_config.main.celery_app worker --loglevel=INFO
+#    command: celery -A celery.main.celery_app worker --loglevel=INFO
 
   rocketry-worker:
     image: rocketry-img
