@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "app"
+version = "0.1.0"
+description = ""
+authors = ["Kamran Abdi <kamranabdicse@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+uvicorn = {extras = ["standard"], version = "^0.20.0"}
+gunicorn = "^20.1.0"
+pydantic = {extras = ["dotenv", "email"], version = "^1.10.4"}
+psycopg2-binary = "^2.9.5"
+alembic = "^1.9.1"
+SQLAlchemy = "^1.4.45"
+celery = "^5.2.7"
+fastapi = "^0.89.0"
+python-jose = "^3.3.0"
+passlib = "^1.7.4"
+persiantools = "^3.0.1"
+python-multipart = "^0.0.5"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
