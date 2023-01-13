@@ -9,7 +9,7 @@ RUN pip install poetry fastapi uvicorn gunicorn
 RUN poetry config virtualenvs.create false
 # Copy poetry.lock* in case it doesn't exist in the repo
 COPY ./app/pyproject.toml ./app/poetry.lock* /app/
-RUN poetry export -f requirements.txt --without-hashes --output /tour-core/requirements.txt
+RUN poetry export -f requirements.txt --without-hashes --output /app/requirements.txt
 RUN pip install -r requirements.txt
 
 # Install Poetry version 2
