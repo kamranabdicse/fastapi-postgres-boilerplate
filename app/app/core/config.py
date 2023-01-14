@@ -20,10 +20,10 @@ class Settings(BaseSettings):
     # 60 minutes * 24 hours * 1 day = 1 days
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 1
 
-    RABBITMQ_USERNAME = str
-    RABBITMQ_PASSWORD = str
-    RABBITMQ_HOST = str
-    RABBITMQ_PORT = str
+    RABBITMQ_USERNAME: str
+    RABBITMQ_PASSWORD: str
+    RABBITMQ_HOST: str
+    RABBITMQ_PORT: str
 
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
     @validator("BACKEND_CORS_ORIGINS", pre=True)
