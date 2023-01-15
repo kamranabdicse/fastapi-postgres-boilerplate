@@ -26,6 +26,7 @@ def login_access_token(
     """
     OAuth2 compatible token login, get an access token for future requests
     """
+    print("------------form ddata", form_data)
     user = crud.user.authenticate(
         db, email=form_data.username, password=form_data.password
     )
@@ -59,10 +60,10 @@ def reset_password(
     """
     Reset password
     """
-    email = verify_password_reset_token(token)
-    if not email:
+    id_ = verify_password_reset_token(token)
+    if not id_:
         raise HTTPException(status_code=400, detail="Invalid token")
-    user = crud.user.get_by_email(db, email=email)
+    user = crud.user.get(db, id=id_)
     if not user:
         raise HTTPException(
             status_code=404,

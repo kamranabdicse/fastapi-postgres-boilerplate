@@ -15,6 +15,16 @@ class Settings(BaseSettings):
     FIRST_SUPERUSER: EmailStr
     FIRST_SUPERUSER_PASSWORD: str
 
+    USERS_OPEN_REGISTRATION: bool = True
+    SECRET_KEY: str = secrets.token_urlsafe(32)
+    # 60 minutes * 24 hours * 1 day = 1 days
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 1
+
+    RABBITMQ_USERNAME: str
+    RABBITMQ_PASSWORD: str
+    RABBITMQ_HOST: str
+    RABBITMQ_PORT: str
+
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
     @validator("BACKEND_CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:

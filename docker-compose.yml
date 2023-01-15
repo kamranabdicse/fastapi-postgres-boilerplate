@@ -1,0 +1,49 @@
+version: '3.7'
+
+services:
+  backend:
+    image: backend-img
+    build:
+      context: .
+      dockerfile: backend.dockerfile
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "8091:80"
+    volumes:
+      - ./app:/app/
+
+  queue:
+    image: rabbitmq
+    ports:
+      - "5672:5672"
+
+
+  celery-worker:
+    image: celery-img
+    restart: always
+    depends_on:
+      - backend
+      - queue
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: celeryworker.dockerfile
+#    command: celery -A celery.main.celery_app worker --loglevel=INFO
+
+  rocketry-worker:
+    image: rocketry-img
+    build:
+      context: .
+      dockerfile: rocketryscheduler.dockerfile
+    volumes:
+      - ./app:/app/
+    restart: always
+    depends_on:
+      - backend
+    env_file:
+      - .env
+
+
