@@ -1,8 +1,13 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Response
 from starlette.middleware.cors import CORSMiddleware
+
+from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.api_v1.api import api_router
 from app.core.config import settings
+from app.models import User
+from cache import Cache
 
 app = FastAPI(
     title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json"
@@ -19,3 +24,15 @@ if settings.BACKEND_CORS_ORIGINS:
     )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+
+@app.on_event("startup")
+async def startup():
+    redis_cache = Cache()
+    url = f"redis://:{settings.REDIS_PASSWORD}@{settings.REDIS_SERVER}:{settings.REDIS_PORT}"
+    await redis_cache.init(
+        host_url=url,
+        prefix="api-cache",
+        response_header="X-API-Cache",
+        ignore_arg_types=[Request, Response, Session, AsyncSession, User],
+    )

@@ -1,10 +1,13 @@
 from typing import Any
 from fastapi import APIRouter, Depends, WebSocket
 from fastapi.responses import HTMLResponse
+from celery.result import AsyncResult
 
 from app import models, schemas
 from app.api import deps
 from app.core.celery_app import celery_app
+from cache import Cache
+
 
 router = APIRouter()
 
@@ -16,8 +19,25 @@ def test_celery(
     """
     Test Celery worker.
     """
-    celery_app.send_task("app.worker.test_celery", args=[msg.msg])
-    return {"msg": "Word received"}
+    task = celery_app.send_task("app.worker.test_celery", args=[msg.msg])
+    return {
+        "msg": f"{msg.msg} - {task.id}",
+    }
+
+
+@router.get("/test-redis/", status_code=201)
+async def test_redis(
+    
+) -> Any:
+    """
+    Test redis connection.
+    """
+    try:
+        redis_cache = Cache()
+        if redis_cache.connected:
+            return {"msg": "Redis connection works."}
+    except Exception as e:
+        return {"msg": f"ERROR: {str(e)}"}
 
 
 @router.websocket("/echo-client/")

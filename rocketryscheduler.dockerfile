@@ -23,3 +23,4 @@ COPY ./app/pyproject.toml ./app/poetry.lock /app/
 
 COPY ./app/ /app/
 CMD ["python", "/app/app/utils/schedule.py"]
+

@@ -21,6 +21,15 @@ class Base:
         DateTime(timezone=True), default=datetime.utcnow, index=True, onupdate=datetime.utcnow
     )
 
+    def __str__(self):
+        return f"{self.__tablename__}:{self.id}"
+
+    def __repr__(self):
+        try:
+            return f"{self.__class__.__name__}({self.__tablename__}:{self.id})"
+        except:
+            return f"Faulty-{self.__class__.__name__}"
+
     @property
     def created_jalali(self):
         created = (self.created).replace(tzinfo=None)

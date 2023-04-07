@@ -1,7 +1,9 @@
 from typing import Optional
+
 from jose import jwt
 
 from app.core.config import settings
+
 
 def verify_password_reset_token(token: str) -> Optional[str]:
     try:
