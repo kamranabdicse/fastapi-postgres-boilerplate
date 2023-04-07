@@ -6,6 +6,10 @@ set -e
 ########################
 # exec uvicorn --reload --host 0.0.0.0 --port 80 --log-level info "app.main:app"
 
+# Run migrations
+alembic upgrade head
+
+
 #########################
 ### run with gunicorn ###
 #########################
