@@ -28,6 +28,7 @@ docker-compose up -d --build
 
 
 ## TODO List:
+- [ ] Add Custom Exception handler
 - [ ] Add jsonb field on table sample
 - [ ] Add docstrings
 - [ ] Add Custom Response model
