@@ -10,6 +10,7 @@ Create an **.env** file on root folder and copy the content from **.env.example*
 
 ### Run the project using Docker containers and forcing build containers
 
+###  Project structure description:
 **docker-compose-dev.yml**: a container for postgres and redis services
 - When you want to build the project you should use this file to have dockerized postgres and redis attached to the project.
 - To build and run postgres and redis should use this command: 
@@ -26,14 +27,19 @@ you should run the following command :
 docker-compose up -d --build
 ```
 
+## Cache
+If you want to use cache in your project, it is better to read it's documentation first:
+[cache document](/app/cache/cache-doc.md)
+
 
 ## TODO List:
-- [ ] Add Custom Exception handler
+- [x] Add Custom Exception handler
 - [ ] Add jsonb field on table sample
-- [ ] Add docstrings
-- [ ] Add Custom Response model
+- [x] Add docstrings
+- [x] Add Custom Response model
 - [ ] Create sample one to many relationship
 - [ ] Create sample many to many relationship
-- [ ] Add Black formatter and flake8 lint
+- [x] Add Black formatter and flake8 lint
 - [ ] Add export report api in csv/xlsx files using StreamingResponse
 - [ ] Convert repo into template using cookiecutter
+- [ ] Add tests for APIs

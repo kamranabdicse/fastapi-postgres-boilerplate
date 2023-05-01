@@ -11,6 +11,7 @@ from sqlalchemy.sql.sqltypes import DateTime
 class Base:
     id: Any
     __name__: str
+
     # Generate __tablename__ automatically
     @declared_attr
     def __tablename__(cls) -> str:
@@ -18,7 +19,10 @@ class Base:
 
     created = Column(DateTime(timezone=True), default=datetime.utcnow, index=True)
     modified = Column(
-        DateTime(timezone=True), default=datetime.utcnow, index=True, onupdate=datetime.utcnow
+        DateTime(timezone=True),
+        default=datetime.utcnow,
+        index=True,
+        onupdate=datetime.utcnow,
     )
 
     def __str__(self):

@@ -1,4 +1,4 @@
-## Setup project without docker
+## Setup project
 create poetry
 ```
 curl -sSL https://install.python-poetry.org | python3 -
@@ -52,6 +52,24 @@ alembic upgrade head
 ```
 ## Setup project in local
 you must create .env file in backend/app and filled it with .env.example
+
+## Create superuser
+Set user email and password in .env file:
+
+```
+FIRST_SUPERUSER=
+FIRST_SUPERUSER_PASSWORD=
+```
+
+Then run __initial_data.py__ file to create first superuser:
+
+```bash
+python3 initial_data.py
+
+# or
+
+poetry run python3 initial_data.py
+```
 
 ### Test websocket
 in order to test websocket paste this line in api test-websocket

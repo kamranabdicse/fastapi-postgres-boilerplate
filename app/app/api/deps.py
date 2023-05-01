@@ -15,6 +15,7 @@ reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/users/login/access-token"
 )
 
+
 def get_db() -> Generator:
     try:
         db = SessionLocal()
@@ -24,7 +25,7 @@ def get_db() -> Generator:
 
 
 async def get_db_async() -> AsyncGenerator:
-   async with async_session() as session:
+    async with async_session() as session:
         yield session
 
 

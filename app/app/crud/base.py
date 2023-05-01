@@ -27,14 +27,14 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         * `schema`: A Pydantic model (schema) class
         """
         self.model = model
-    
+
     async def _commit_refresh_async(
         self, db: AsyncSession, db_obj: ModelType
     ) -> ModelType:
         await db.commit()
         await db.refresh(db_obj)
         return db_obj
-    
+
     def _commit_refresh(
         self, db: Session | AsyncSession, db_obj: ModelType
     ) -> ModelType | Awaitable[ModelType]:
@@ -43,7 +43,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         db.commit()
         db.refresh(db_obj)
         return db_obj
-    
+
     async def _first_async(self, scalars) -> ModelType | None:
         results = await scalars
         return results.first()
@@ -52,7 +52,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         if iscoroutine(scalars):
             return self._first_async(scalars)
         return scalars.first()
-    
+
     async def _last_async(self, scalars) -> ModelType | None:
         results = await scalars
         return results.last()
@@ -76,7 +76,6 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     ) -> ModelType | Awaitable[ModelType] | None:
         query = select(self.model).filter(self.model.id == id)
         return self._first(db.scalars(query))
-
 
     def get_multi(
         self,
@@ -124,8 +123,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         db.add(db_obj)
         return self._commit_refresh(db=db, db_obj=db_obj)
 
-
-    async def _remove_async(self, db: AsyncSession, *, id:int) -> ModelType:
+    async def _remove_async(self, db: AsyncSession, *, id: int) -> ModelType:
         db_obj = await self.get(db=db, id=id)
         db_obj.is_deleted = True
 
@@ -134,7 +132,9 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
         return await self._commit_refresh_async(db, db_obj=db_obj)
 
-    def remove(self, db: Session | AsyncSession, *, id: int) -> ModelType | Awaitable[ModelType]:
+    def remove(
+        self, db: Session | AsyncSession, *, id: int
+    ) -> ModelType | Awaitable[ModelType]:
         if isinstance(db, AsyncSession):
             return self._remove_async(db=db, id=id)
 
