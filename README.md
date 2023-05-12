@@ -1,5 +1,5 @@
 # fastapi-postgres-boilerplate
-This project template which uses FastAPi, Alembic, SQLAlchemy as ORM, Rocketry as scheduler, Celery as async task manager. It shows a complete async CRUD template. Also I setup cache app with invalidate feature. 
+This project template which uses FastAPi, Alembic, SQLAlchemy as ORM, Rocketry as scheduler, Celery as async task manager with Rabittmq. It shows a complete async CRUD template. Also I setup cache app with invalidate feature with Redis.
 
 
 ## Set environment variables
@@ -43,3 +43,4 @@ If you want to use cache in your project, it is better to read it's documentatio
 - [ ] Add export report api in csv/xlsx files using StreamingResponse
 - [ ] Convert repo into template using cookiecutter
 - [ ] Add tests for APIs
+- [x] Add websocket sample
