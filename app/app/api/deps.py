@@ -6,10 +6,11 @@ from jose import jwt
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
-from app import crud, models, schemas
+from app import crud, models, schemas, utils
 from app.core import security
 from app.core.config import settings
 from app.db.session import SessionLocal, async_session
+from app import exceptions as exc
 
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/users/login/access-token"
@@ -60,7 +61,9 @@ async def get_current_active_superuser(
     current_user: models.User = Depends(get_current_user),
 ) -> models.User:
     if not crud.user.is_superuser(current_user):
-        raise HTTPException(
-            status_code=400, detail="The user doesn't have enough privileges"
+        raise exc.InternalServiceError(
+            status_code=403,
+            detail="Permision Error",
+            msg_code=utils.MessageCodes.permisionError,
         )
     return current_user
