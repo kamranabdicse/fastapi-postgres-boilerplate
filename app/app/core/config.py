@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
     POSTGRES_TEST_DB: str
+    POSTGRES_PORT: str
 
     PROJECT_NAME: str
     API_V1_STR: str = "/api/v1"
@@ -57,6 +58,7 @@ class Settings(BaseSettings):
             password=values.get("POSTGRES_PASSWORD"),
             host=values.get("POSTGRES_SERVER"),
             path=f"/{values.get('POSTGRES_DB') or ''}",
+            port=values.get('POSTGRES_PORT')
         )
     
 
@@ -75,6 +77,7 @@ class Settings(BaseSettings):
             password=values.get("POSTGRES_PASSWORD"),
             host=values.get("POSTGRES_SERVER"),
             path=f"/{values.get('POSTGRES_TEST_DB') or ''}",
+            port=values.get('POSTGRES_PORT')
         )
 
 
