@@ -1,4 +1,6 @@
 from fastapi import FastAPI, Request, Response
+from fastapi.responses import JSONResponse
+
 from starlette.middleware.cors import CORSMiddleware
 
 from sqlalchemy.orm import Session
@@ -14,6 +16,8 @@ from app.exceptions import (
     validation_exceptions,
 )
 from cache import Cache
+
+from fastapi_jwt_auth.exceptions import AuthJWTException
 
 app = FastAPI(
     title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json"
@@ -47,4 +51,12 @@ async def startup():
         prefix="api-cache",
         response_header="X-API-Cache",
         ignore_arg_types=[Request, Response, Session, AsyncSession, User],
+    )
+
+
+@app.exception_handler(AuthJWTException)
+def authjwt_exception_handler(request: Request, exc: AuthJWTException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.message}
     )

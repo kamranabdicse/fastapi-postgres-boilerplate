@@ -3,9 +3,15 @@ from datetime import timedelta
 from fastapi import APIRouter, Body, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import HTTPException
+from fastapi.responses import JSONResponse
+
 from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.requests import Request
+from starlette import status
+from fastapi_jwt_auth import AuthJWT
+from fastapi_jwt_auth.exceptions import AuthJWTException
 
 from app import crud, models, schemas, utils
 from app.api import deps
@@ -21,8 +27,13 @@ from cache import cache, invalidate
 from cache.util import ONE_DAY_IN_SECONDS
 
 
+
 router = APIRouter()
 namespace = "user"
+
+@AuthJWT.load_config
+def get_config():
+    return settings
 
 
 @router.post("/login/access-token")
@@ -30,7 +41,8 @@ async def login_access_token(
     request: Request,
     db: AsyncSession = Depends(deps.get_db_async),
     form_data: OAuth2PasswordRequestForm = Depends(),
-) -> schemas.Token:
+    Authorize: AuthJWT = Depends()
+):
     """
     OAuth2 compatible token login, get an access token for future requests
     """
@@ -52,16 +64,57 @@ async def login_access_token(
     access_token_expires = timedelta(
         minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
     )
-
-    return schemas.Token(
+    # _refresh_token = schemas.Token(access_token=security.create_access_token(
+    #         user.id, expires_delta=settings.REFRESH_TOKEN_EXPIRE_MINUTES
+    #     ),
+    #     token_type="bearer",
+    #     # 'access_list' later used for user access control
+    #     access_list=[route.name for route in request.app.routes],)
+    _refresh_token = Authorize.create_refresh_token(subject=user.id)
+    return {"access_token": schemas.Token(
         access_token=security.create_access_token(
             user.id, expires_delta=access_token_expires
         ),
         token_type="bearer",
         # 'access_list' later used for user access control
         access_list=[route.name for route in request.app.routes],
-    )
+    ), "refresh_token": _refresh_token}
 
+@router.post('/auth/refresh-token')
+async def refresh_token(
+    request: Request,
+    db: AsyncSession = Depends(deps.get_db_async),
+    Authorize: AuthJWT = Depends()
+    ) -> schemas.Token:
+    try:
+
+        Authorize.jwt_refresh_token_required()
+        user_id = Authorize.get_jwt_subject()
+        if not user_id:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                                detail='Could not refresh access token')
+        user = await crud.user.get(
+            db, id=user_id
+        )
+        if not user:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                                detail='The user belonging to this token no logger exist')
+        access_token = schemas.Token(
+            access_token=security.create_access_token(
+                user.id, expires_delta=timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
+            ),
+            token_type="bearer",
+            # 'access_list' later used for user access control
+            access_list=[route.name for route in request.app.routes],
+        )
+    except Exception as e:
+        error = e.__class__.__name__
+        if error == 'MissingTokenError':
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail='Please provide refresh token')
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=error)
+    return access_token
 
 @router.post("/login/test-token")
 async def test_token(

@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     # 60 minutes * 24 hours * 1 day = 1 days
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 1
+    REFRESH_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 2
 
     RABBITMQ_USERNAME: str
     RABBITMQ_PASSWORD: str
@@ -37,7 +38,7 @@ class Settings(BaseSettings):
     REDIS_TIMEOUT: Optional[int] = 5
 
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
-
+    authjwt_secret_key: str = "secret"
     @validator("BACKEND_CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
         if isinstance(v, str) and not v.startswith("["):
