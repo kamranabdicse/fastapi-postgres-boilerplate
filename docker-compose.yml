@@ -8,7 +8,7 @@ services:
       dockerfile: backend.dockerfile
     restart: always
     env_file:
-      - .env
+      - app/.env
     ports:
       - "8091:80"
     volumes:
@@ -27,7 +27,7 @@ services:
       - backend
       - queue
     env_file:
-      - .env
+      - app/.env
     build:
       context: .
       dockerfile: celeryworker.dockerfile
@@ -44,6 +44,6 @@ services:
     depends_on:
       - backend
     env_file:
-      - .env
+      - app/.env
 
 
