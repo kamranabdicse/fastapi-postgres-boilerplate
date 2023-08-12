@@ -1,17 +1,14 @@
-from datetime import timedelta
+from datetime import datetime
+from typing import Any
 
 from fastapi import APIRouter, Body, Depends
-from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import HTTPException
-from fastapi.responses import JSONResponse
+from starlette import status
 
 from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
-from starlette.requests import Request
-from starlette import status
-from fastapi_jwt_auth import AuthJWT
-from fastapi_jwt_auth.exceptions import AuthJWTException
+import jwt
 
 from app import crud, models, schemas, utils
 from app.api import deps
@@ -27,114 +24,97 @@ from cache import cache, invalidate
 from cache.util import ONE_DAY_IN_SECONDS
 
 
-
 router = APIRouter()
 namespace = "user"
 
-@AuthJWT.load_config
-def get_config():
-    return settings
 
-
-@router.post("/login/access-token")
-async def login_access_token(
-    request: Request,
-    db: AsyncSession = Depends(deps.get_db_async),
-    form_data: OAuth2PasswordRequestForm = Depends(),
-    Authorize: AuthJWT = Depends()
-):
+@router.post("/token")
+async def login(
+    login_user_in: schemas.LoginUser,
+    db: Session = Depends(deps.get_db_async),
+) -> Any:
     """
-    OAuth2 compatible token login, get an access token for future requests
+    Get access and refresh token.
     """
     user = await crud.user.authenticate(
-        db, email=form_data.username, password=form_data.password
+        db, email=login_user_in.email, password=login_user_in.password
     )
     if not user:
         raise exc.InternalServiceError(
             status_code=400,
             detail="Incorrect email or password",
-            msg_code=utils.MessageCodes.incorrect_email_or_password,
+            msg_code=utils.MessageCodes.incorrect_email_or_password
         )
     elif not crud.user.is_active(user):
         raise exc.InternalServiceError(
             status_code=400,
             detail="Inactive user",
-            msg_code=utils.MessageCodes.inactive_user,
+            msg_code=utils.MessageCodes.inactive_user
         )
-    access_token_expires = timedelta(
-        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
-    )
-    # _refresh_token = schemas.Token(access_token=security.create_access_token(
-    #         user.id, expires_delta=settings.REFRESH_TOKEN_EXPIRE_MINUTES
-    #     ),
-    #     token_type="bearer",
-    #     # 'access_list' later used for user access control
-    #     access_list=[route.name for route in request.app.routes],)
-    _refresh_token = Authorize.create_refresh_token(subject=user.id)
-    return {"access_token": schemas.Token(
-        access_token=security.create_access_token(
-            user.id, expires_delta=access_token_expires
-        ),
-        token_type="bearer",
-        # 'access_list' later used for user access control
-        access_list=[route.name for route in request.app.routes],
-    ), "refresh_token": _refresh_token}
+    
+    access_token = security.create_access_token(data=user.id)
+    refresh_token = security.create_refresh_token(data=user.id)
+    return {"access_token": access_token, "refresh_token": refresh_token}
 
-@router.post('/auth/refresh-token')
+
+@router.post("/refresh-token")
 async def refresh_token(
-    request: Request,
-    db: AsyncSession = Depends(deps.get_db_async),
-    Authorize: AuthJWT = Depends()
-    ) -> schemas.Token:
+    token: schemas.RefreshToken
+) -> Any:
+    """
+    Get access token.
+    """
+    token = token.refresh_token
+
     try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=settings.ALGORITHM)
+        user_id = payload.get("sub")
+        token_type = payload.get("token_type")
+        expire_time = payload.get("exp")
 
-        Authorize.jwt_refresh_token_required()
-        user_id = Authorize.get_jwt_subject()
-        if not user_id:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                                detail='Could not refresh access token')
-        user = await crud.user.get(
-            db, id=user_id
-        )
-        if not user:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                                detail='The user belonging to this token no logger exist')
-        access_token = schemas.Token(
-            access_token=security.create_access_token(
-                user.id, expires_delta=timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
-            ),
-            token_type="bearer",
-            # 'access_list' later used for user access control
-            access_list=[route.name for route in request.app.routes],
-        )
-    except Exception as e:
-        error = e.__class__.__name__
-        if error == 'MissingTokenError':
+        if not user_id or token_type != "refresh":
+            raise exc.InternalServiceError(
+                status_code=401,
+                detail="Your token is invalid",
+                msg_code=utils.MessageCodes.invalid_token
+            )
+        
+        if datetime.fromtimestamp(expire_time) < datetime.now():
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail='Please provide refresh token')
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=error)
-    return access_token
+                status_code = status.HTTP_401_UNAUTHORIZED,
+                detail="Token expired",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+    
+        access_token = security.create_access_token(data=user_id)
+        return {"access_token": access_token}
+    
+    except jwt.ExpiredSignatureError:
+        raise exc.InternalServiceError(
+            status_code=401,
+            detail="Token has expired",
+            msg_code=utils.MessageCodes.expired_token
+        )
 
-@router.post("/login/test-token")
-async def test_token(
+
+@router.post("/me")
+async def me(
     current_user: models.User = Depends(deps.get_current_user),
 ) -> APIResponseType[schemas.User]:
     """
-    Test access token
+    Get authenticated user.
     """
     return APIResponse(current_user)
-
 
 @router.post("/reset-password/")
 @invalidate(namespace=namespace)
 async def reset_password(
-    token: str = Body(...),
-    new_password: str = Body(...),
+    token: str = Body(),
+    new_password: str = Body(),
     db: Session = Depends(deps.get_db_async),
 ) -> schemas.Msg:
     """
-    Reset password
+    Reset password.
     """
     id_ = verify_password_reset_token(token)
     if not id_:
@@ -200,14 +180,14 @@ async def create_user(
     return APIResponse(user)
 
 
-@router.put("/me")
+@router.put("/update/me")
 @invalidate(namespace=namespace)
 async def update_user_me(
     *,
     db: AsyncSession = Depends(deps.get_db_async),
-    password: str = Body(None),
-    full_name: str = Body(None),
-    email: str = Body(None),
+    password: str | None = Body(),
+    full_name: str | None = Body(),
+    email: str | None = Body(),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> APIResponseType[schemas.User]:
     """
