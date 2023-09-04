@@ -1,5 +1,5 @@
 ## Setup project
-create poetry
+after you cloned this project, you should install and use poetry for installing the essential packages and libraries, so you should create poetry as follows:
 ```
 curl -sSL https://install.python-poetry.org | python3 -
 ```
