@@ -41,6 +41,16 @@ poetry shell
 ```
 poetry install
 ```
+
+## Setup project without docker using Uvicorn
+you must create .env file in both app and app/app folders and filled it with .env-example and change it according to your system configuration
+
+you have to install and run postgres, redis and rabbitMQ server in your system and enter the ports and names and other credentials in the .env files for the project to run without problem.
+
+if you want to run the project, after starting the named servers, migrate the project and use this command from the first "app" folder, it should look like this:
+```
+(app-py3.10) PS C:\some_folders\fastapi-postgres-boilerplate\app> uvicorn app.main:app --reload
+```
 ## Migrate project
 create migration file with:
 ```
@@ -50,8 +60,6 @@ apply migration with:
 ```commandline
 alembic upgrade head
 ```
-## Setup project in local
-you must create .env file in backend/app and filled it with .env.example
 
 ## Create superuser
 Set user email and password in .env file:
