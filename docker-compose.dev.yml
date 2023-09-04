@@ -6,9 +6,9 @@ services:
     volumes:
       - ./data:/var/lib/postgresql/data/pgdata
     env_file:
-      - .env
+      - app/.env
     ports:
-      - 5432:5432
+      - 5433:5432
     environment:
       - PGDATA=/var/lib/postgresql/data/pgdata
 

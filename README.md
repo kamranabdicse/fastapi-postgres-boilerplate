@@ -42,5 +42,5 @@ If you want to use cache in your project, it is better to read it's documentatio
 - [x] Add Black formatter and flake8 lint
 - [ ] Add export report api in csv/xlsx files using StreamingResponse
 - [ ] Convert repo into template using cookiecutter
-- [ ] Add tests for APIs
+- [x] Add tests for APIs
 - [x] Add websocket sample

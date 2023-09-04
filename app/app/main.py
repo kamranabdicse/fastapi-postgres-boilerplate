@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request, Response
+
 from starlette.middleware.cors import CORSMiddleware
 
 from sqlalchemy.orm import Session
@@ -14,6 +15,7 @@ from app.exceptions import (
     validation_exceptions,
 )
 from cache import Cache
+
 
 app = FastAPI(
     title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json"

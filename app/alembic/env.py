@@ -37,10 +37,10 @@ def get_url():
     user = settings.POSTGRES_USER
     password = settings.POSTGRES_PASSWORD
     server = settings.POSTGRES_SERVER
-    # port = settings.POSTGRES_PORT
+    port = settings.POSTGRES_PORT
     db = settings.POSTGRES_DB
-    print(f"postgresql://{user}:{password}@{server}/{db}")
-    return f"postgresql://{user}:{password}@{server}/{db}"
+    print(f"postgresql://{user}:{password}@{server}:{port}/{db}")
+    return f"postgresql://{user}:{password}@{server}:{port}/{db}"
 
 
 def run_migrations_offline() -> None:
@@ -61,6 +61,7 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        compare_type=True,
     )
 
     with context.begin_transaction():
@@ -84,7 +85,7 @@ def run_migrations_online() -> None:
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection, target_metadata=target_metadata, compare_type=True
         )
 
         with context.begin_transaction():
