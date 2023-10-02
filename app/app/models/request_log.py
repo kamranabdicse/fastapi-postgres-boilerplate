@@ -6,7 +6,7 @@ from app.db.base_class import Base
 class RequestLog(Base):
     id = Column(Integer, primary_key=True, index=True)
 
-    authorization = Column(String(256), nullable=True)
+    authorization = Column(String, nullable=True)
     method = Column(String(10), nullable=True)
     service_name = Column(String(50), nullable=True)
     ip = Column(String(50), nullable=True)
